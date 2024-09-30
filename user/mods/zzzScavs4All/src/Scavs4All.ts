@@ -59,12 +59,17 @@ class Scavs4All implements IPostDBLoadMod
                       //check if the current subcondition is a kill condition and if it requires scav kills
                       if (specificCondition.conditionType === 'Kills' && specificCondition.target === 'Savage')
                       {  
-                        if(this.debug == true)
-                          {
-                            this.logger.info("Found a scav kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any" )
-                          }
-                        //if it does replace the condition with any target
-                        quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'any';
+                        //make sure the quest isn't a quest to kill bosses
+                        if(specificCondition.savageRole == undefined || specificCondition.savageRole.length == 0)
+                        {
+                          
+                          if(this.debug == true)
+                            {
+                              this.logger.info("Found a scav kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any" )
+                            }
+                          //if it does replace the condition with any target
+                          quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'any';
+                        }
                       }
                     }
                 }
