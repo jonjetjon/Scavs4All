@@ -10,6 +10,7 @@ class Scavs4All implements IPostDBLoadMod
   private logger :ILogger
   private loggerBuffer :string[] = []
   private replacePmc = false
+  private harderPmc = false;
   private debug = false
 
   public postDBLoad(container :DependencyContainer):void
@@ -31,6 +32,10 @@ class Scavs4All implements IPostDBLoadMod
 
           case 'ReplacePMCWithAll':
             this.replacePmc = true
+            break
+          
+          case 'HarderPMCWithAll':
+            this.harderPmc = true
             break
         }
       }
@@ -79,8 +84,16 @@ class Scavs4All implements IPostDBLoadMod
                               {
                                 this.logger.info("Found a pmc kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any(IF YOU DO NOT WANT THIS DISABLE IT IN CONFIG)" )
                               }
-                            //if it does replace the condition with any target
                             quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'any';
+                            //check if we have harder pmcwithall turned on, if we do we need to double the amount needed
+                            if(this.harderPmc == true)
+                            {
+                              quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * 2;
+                              if(this.debug == true)
+                                {
+                                  this.logger.info("harder pmc replacement conditions are ON doubling kill count for: " + currentQuest.QuestName )
+                                }
+                            }
                           }
                         }
                     }
