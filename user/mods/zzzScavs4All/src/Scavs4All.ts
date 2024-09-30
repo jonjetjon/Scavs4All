@@ -72,7 +72,7 @@ class Scavs4All implements IPostDBLoadMod
                               this.logger.info("Found a scav kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any" )
                             }
                           //if it does replace the condition with any target
-                          quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'any';
+                          quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'Any';
                         }
                       }
                       //if we have replacepmc turned on we need to replace pmc conditions as well
