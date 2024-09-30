@@ -62,7 +62,6 @@ class Scavs4All implements IPostDBLoadMod
                         //make sure the quest isn't a quest to kill bosses
                         if(specificCondition.savageRole == undefined || specificCondition.savageRole.length == 0)
                         {
-                          
                           if(this.debug == true)
                             {
                               this.logger.info("Found a scav kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any" )
@@ -71,6 +70,19 @@ class Scavs4All implements IPostDBLoadMod
                           quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'any';
                         }
                       }
+                      //if we have replacepmc turned on we need to replace pmc conditions as well
+                      if(this.replacePmc == true)
+                        {
+                          if(specificCondition.conditionType === 'Kills' && specificCondition.target === 'AnyPmc')
+                          {
+                            if(this.debug == true)
+                              {
+                                this.logger.info("Found a pmc kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any(IF YOU DO NOT WANT THIS DISABLE IT IN CONFIG)" )
+                              }
+                            //if it does replace the condition with any target
+                            quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'any';
+                          }
+                        }
                     }
                 }
             }
