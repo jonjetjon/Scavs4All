@@ -88,12 +88,13 @@ class Scavs4All implements IPostDBLoadMod
                             //check if we have harder pmcwithall turned on, if we do we need to double the amount needed
                             if(this.harderPmc == true)
                             {
-                              quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * 2;
                               if(this.debug == true)
                                 {
-                                  this.logger.info("harder pmc replacement conditions are ON doubling kill count for: " + currentQuest.QuestName )
+                                  this.logger.info("harder pmc replacement conditions are ON doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + currentCondition.value * 2)
                                 }
                             }
+                              quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * 2;
+                              
                           }
                         }
                     }
