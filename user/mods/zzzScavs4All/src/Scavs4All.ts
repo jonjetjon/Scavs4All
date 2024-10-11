@@ -18,7 +18,7 @@ class Scavs4All implements IPostDBLoadMod
     this.container = container
     this.logger = this.container.resolve<ILogger>("WinstonLogger")
     const quests = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().templates.quests
-
+    const questsText = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().locales.global.en
     //go through each option in the config.json and handle known ones
     for (let eachOption in this.config)
     {
@@ -40,11 +40,11 @@ class Scavs4All implements IPostDBLoadMod
         }
       }
     }
-    this.changeTargets(quests)
+    this.changeTargets(quests, questsText)
     
   }
 
-  private changeTargets(quests: any):void
+  private changeTargets(quests: any, questsText: any):void
   {
     //iterate through every quest in quests.json
     for(let eachQuest in quests)
@@ -73,6 +73,15 @@ class Scavs4All implements IPostDBLoadMod
                             }
                           //if it does replace the condition with any target
                           quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'Any';
+                          
+                          //find the id for changing the task text
+                          const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id
+
+                          //and append (S4A) to the tast text
+                          if(questTextID.questTextID != null)
+                          {
+                            questTextID.questTextID = questTextID.questTextID + " (S4A)"
+                          }
                         }
                       }
                       //if we have replacepmc turned on we need to replace pmc conditions as well
