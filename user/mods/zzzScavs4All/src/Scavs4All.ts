@@ -78,9 +78,9 @@ class Scavs4All implements IPostDBLoadMod
                           const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id
 
                           //and append (S4A) to the tast text
-                          if(questTextID.questTextID != null)
+                          if(questsText.questTextID != null)
                           {
-                            questTextID.questTextID = questTextID.questTextID + " (S4A)"
+                            questsText.questTextID = questTextID.questTextID + " (S4A)"
                           }
                         }
                       }
