@@ -2,6 +2,7 @@ import type { DependencyContainer } from "tsyringe"
 import type { ILogger } from "@spt-aki/models/spt/utils/ILogger"
 import type { IPostDBLoadMod } from "@spt-aki/models/external/IPostDBLoadMod"
 import type { DatabaseServer } from "@spt-aki/servers/DatabaseServer"
+import type {LocaleService} from "@spt-aki/services/LocaleService"
 
 class Scavs4All implements IPostDBLoadMod
 {
@@ -18,7 +19,7 @@ class Scavs4All implements IPostDBLoadMod
     this.container = container
     this.logger = this.container.resolve<ILogger>("WinstonLogger")
     const quests = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().templates.quests
-    const questsText = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().locales.global.en
+    const questsText = this.container.resolve<LocaleService>("LocaleService").getLocaleDb()
     //go through each option in the config.json and handle known ones
     for (let eachOption in this.config)
     {
@@ -41,7 +42,6 @@ class Scavs4All implements IPostDBLoadMod
       }
     }
     this.changeTargets(quests, questsText)
-    
   }
 
   private changeTargets(quests: any, questsText: any):void
