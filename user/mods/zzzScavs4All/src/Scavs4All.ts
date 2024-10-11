@@ -94,6 +94,7 @@ class Scavs4All implements IPostDBLoadMod
                                 this.logger.info("Found a pmc kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any(IF YOU DO NOT WANT THIS DISABLE IT IN CONFIG)" )
                               }
                             quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'Any';
+
                             //check if we have harder pmcwithall turned on, if we do we need to double the amount needed
                             if(this.harderPmc == true)
                             {
@@ -103,6 +104,16 @@ class Scavs4All implements IPostDBLoadMod
                                 }
                                 quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * 2;
                             }
+
+                            //find the id for changing the task text
+                            const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id
+
+                            //and append (S4A) to the tast text
+                            if(questsText[questTextID] != null)
+                            {
+                              questsText[questTextID] = questsText[questTextID] + " (S4A)"
+                            }
+                            
                               
                               
                           }
