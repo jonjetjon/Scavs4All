@@ -1,5 +1,6 @@
 {
     "ReplacePMCWithAll": false,
     "HarderPMCWithAll": false,
-    "debug" : true
+    "debug" : true,
+    "verboseDebug": false
   }

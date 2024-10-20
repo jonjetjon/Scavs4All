@@ -6,20 +6,21 @@ import type {LocaleService} from "@spt-aki/services/LocaleService"
 
 class Scavs4All implements IPostDBLoadMod
 {
-  private container: DependencyContainer
-  private config = require("../config/config.json")
-  private logger :ILogger
-  private loggerBuffer :string[] = []
-  private replacePmc = false
+  private container: DependencyContainer;
+  private config = require("../config/config.json");
+  private logger :ILogger;
+  private loggerBuffer :string[] = [];
+  private replacePmc = false;
   private harderPmc = false;
-  private debug = false
+  private debug = false;
+  private verboseDebug = false;
 
   public postDBLoad(container :DependencyContainer):void
   {
-    this.container = container
-    this.logger = this.container.resolve<ILogger>("WinstonLogger")
-    const quests = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().templates.quests
-    const questsText = this.container.resolve<LocaleService>("LocaleService").getLocaleDb()
+    this.container = container;
+    this.logger = this.container.resolve<ILogger>("WinstonLogger");
+    const quests = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().templates.quests;
+    const questsText = this.container.resolve<LocaleService>("LocaleService").getLocaleDb();
     //go through each option in the config.json and handle known ones
     for (let eachOption in this.config)
     {
@@ -28,16 +29,20 @@ class Scavs4All implements IPostDBLoadMod
         switch (eachOption)
         {
           case 'debug':
-            this.debug = true
-            break
+          this.debug = true;
+          break;
 
           case 'ReplacePMCWithAll':
-            this.replacePmc = true
-            break
+          this.replacePmc = true;
+          break;
           
           case 'HarderPMCWithAll':
-            this.harderPmc = true
-            break
+          this.harderPmc = true;
+          break;
+          
+          case 'verboseDebug':
+          this.verboseDebug = true;
+          break;
         }
       }
     }
@@ -46,6 +51,10 @@ class Scavs4All implements IPostDBLoadMod
 
   private changeTargets(quests: any, questsText: any):void
   {
+    if(this.verboseDebug == true)
+    {
+      this.logger.info("Iterating through quests");
+    }
     //iterate through every quest in quests.json
     for(let eachQuest in quests)
         {
@@ -69,18 +78,31 @@ class Scavs4All implements IPostDBLoadMod
                         {
                           if(this.debug == true)
                             {
-                              this.logger.info("Found a scav kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any" )
+                              this.logger.info("Found a scav kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any" );
                             }
                           //if it does replace the condition with any target
                           quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'Any';
                           
                           //find the id for changing the task text
-                          const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id
+                          const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id;
+                            
+                          if(this.verboseDebug == true)
+                          {
+                            this.logger.info("Quest ID is: " + questTextID);
+                          }
 
                           //and append (S4A) to the tast text
                           if(questsText[questTextID] != null)
                           {
-                            questsText[questTextID] = questsText[questTextID] + " (S4A)"
+                            if(this.verboseDebug == true)
+                            {
+                              this.logger.info("Quest text found! Original quest text is: " + questsText[questTextID]);
+                            }
+                            questsText[questTextID] = questsText[questTextID] + " (S4A)";
+                            if(this.verboseDebug == true)
+                            {
+                              this.logger.info("New quest text is" + questsText[questTextID]);
+                            }
                           }
                         }
                       }
@@ -100,22 +122,19 @@ class Scavs4All implements IPostDBLoadMod
                             {
                               if(this.debug == true)
                                 {
-                                  this.logger.info("harder pmc replacement conditions are ON doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + currentCondition.value * 2)
+                                  this.logger.info("harder pmc replacement conditions are ON doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + currentCondition.value * 2);
                                 }
                                 quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * 2;
                             }
 
                             //find the id for changing the task text
-                            const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id
+                            const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id;
 
                             //and append (S4A) to the tast text
                             if(questsText[questTextID] != null)
                             {
-                              questsText[questTextID] = questsText[questTextID] + " (S4A)"
+                              questsText[questTextID] = questsText[questTextID] + " (S4A)";
                             }
-                            
-                              
-                              
                           }
                         }
                     }
