@@ -3,6 +3,7 @@ import type { ILogger } from "@spt-aki/models/spt/utils/ILogger"
 import type { IPostDBLoadMod } from "@spt-aki/models/external/IPostDBLoadMod"
 import type { DatabaseServer } from "@spt-aki/servers/DatabaseServer"
 import type {LocaleService} from "@spt-aki/services/LocaleService"
+import { LogTextColor } from "@spt/models/spt/logging/LogTextColor";
 
 class Scavs4All implements IPostDBLoadMod
 {
@@ -50,12 +51,12 @@ class Scavs4All implements IPostDBLoadMod
       }
     }
     this.changeTargets(quests, questsText);
-    this.logger.info("Scavs4All finished searching quest database!");
+    this.logger.log("Scavs4All finished searching quest database!", LogTextColor.GREEN);
     this.logger.info("--------------------------------------------");
-    this.logger.info("Found a total of " + this.totalNumberOfQuests + " quests");
-    this.logger.info("Replaced a total of " + this.totalNumberOfQuestsReplaced + " quest conditions");
-    this.logger.info("Replaced " + this.numberOfScavQuestsReplaced + " scav kill conditions");
-    this.logger.info("Replaced " + this.numberOfPmcQuestsReplaced + " PMC kill conditions");
+    this.logger.log("Found a total of " + this.totalNumberOfQuests + " quests", LogTextColor.GREEN);
+    this.logger.log("Replaced a total of " + this.totalNumberOfQuestsReplaced + " quest conditions", LogTextColor.GREEN);
+    this.logger.log("Replaced " + this.numberOfScavQuestsReplaced + " scav kill conditions", LogTextColor.GREEN);
+    this.logger.log("Replaced " + this.numberOfPmcQuestsReplaced + " PMC kill conditions", LogTextColor.GREEN);
     this.logger.info("--------------------------------------------");
   }
 
