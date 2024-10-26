@@ -4,11 +4,15 @@ import type { IPostDBLoadMod } from "@spt-aki/models/external/IPostDBLoadMod"
 import type { DatabaseServer } from "@spt-aki/servers/DatabaseServer"
 import type {LocaleService} from "@spt-aki/services/LocaleService"
 import { LogTextColor } from "@spt/models/spt/logging/LogTextColor";
+import { JsonUtil } from "@spt/utils/JsonUtil";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 class Scavs4All implements IPostDBLoadMod
 {
   private container: DependencyContainer;
-  private config = require("../config/config.json");
+  private static configPath = path.resolve(__dirname, "../config/config.json");
+  private static config: Config;
   private logger :ILogger;
   private loggerBuffer :string[] = [];
   private replacePmc = false;
@@ -19,38 +23,27 @@ class Scavs4All implements IPostDBLoadMod
   private numberOfPmcQuestsReplaced = 0;
   private totalNumberOfQuests = 0;
   private totalNumberOfQuestsReplaced =0;
+  
   public postDBLoad(container :DependencyContainer):void
   {
     this.container = container;
     this.logger = this.container.resolve<ILogger>("WinstonLogger");
     const quests = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().templates.quests;
     const questsText = this.container.resolve<LocaleService>("LocaleService").getLocaleDb();
-    //go through each option in the config.json and handle known ones
-    for (let eachOption in this.config)
-    {
-      if (this.config[eachOption] != false)
-      {
-        switch (eachOption)
-        {
-          case 'debug':
-          this.debug = true;
-          break;
+    
+    //load in our config file as an instance of Config
+    Scavs4All.config = JSON.parse(fs.readFileSync(Scavs4All.configPath, "utf-8"));
 
-          case 'ReplacePMCWithAll':
-          this.replacePmc = true;
-          break;
-          
-          case 'HarderPMCWithAll':
-          this.harderPmc = true;
-          break;
-          
-          case 'verboseDebug':
-          this.verboseDebug = true;
-          break;
-        }
-      }
-    }
+    //go through our config and set the associated variables using the config file
+    this.replacePmc = Scavs4All.config.ReplacePMCWithAll;
+    this.harderPmc = Scavs4All.config.HarderPMCWithAll;
+    this.debug = Scavs4All.config.debug;
+    this.verboseDebug = Scavs4All.config.verboseDebug;
+
+    //run the main code to replace the quest conditions and text
     this.changeTargets(quests, questsText);
+
+    //print out a summary once done
     this.logger.log("Scavs4All finished searching quest database!", LogTextColor.GREEN);
     this.logger.info("--------------------------------------------");
     this.logger.log("Found a total of " + this.totalNumberOfQuests + " quests", LogTextColor.GREEN);
@@ -174,6 +167,15 @@ class Scavs4All implements IPostDBLoadMod
             }
         }
   }
+}
+
+interface Config 
+{
+  ReplacePMCWithAll: boolean,
+  HarderPMCWithAll: boolean,
+  HarderPMCMultiplier: number,
+  debug: boolean,
+  verboseDebug: boolean,
 }
 
 module.exports = {mod: new Scavs4All()}
