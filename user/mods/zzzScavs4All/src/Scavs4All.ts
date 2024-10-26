@@ -14,7 +14,9 @@ class Scavs4All implements IPostDBLoadMod
   private harderPmc = false;
   private debug = false;
   private verboseDebug = false;
-
+  private numberOfScavQuestsReplaced = 0;
+  private numberOfPmcQuestsReplaced = 0;
+  private totalNumberOfQuestsReplaced =0;
   public postDBLoad(container :DependencyContainer):void
   {
     this.container = container;
