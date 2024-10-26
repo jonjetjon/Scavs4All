@@ -3,6 +3,7 @@ import type { ILogger } from "@spt-aki/models/spt/utils/ILogger"
 import type { IPostDBLoadMod } from "@spt-aki/models/external/IPostDBLoadMod"
 import type { DatabaseServer } from "@spt-aki/servers/DatabaseServer"
 import type {LocaleService} from "@spt-aki/services/LocaleService"
+import { LogTextColor } from "@spt/models/spt/logging/LogTextColor";
 
 class Scavs4All implements IPostDBLoadMod
 {
@@ -14,7 +15,10 @@ class Scavs4All implements IPostDBLoadMod
   private harderPmc = false;
   private debug = false;
   private verboseDebug = false;
-
+  private numberOfScavQuestsReplaced = 0;
+  private numberOfPmcQuestsReplaced = 0;
+  private totalNumberOfQuests = 0;
+  private totalNumberOfQuestsReplaced =0;
   public postDBLoad(container :DependencyContainer):void
   {
     this.container = container;
@@ -46,7 +50,14 @@ class Scavs4All implements IPostDBLoadMod
         }
       }
     }
-    this.changeTargets(quests, questsText)
+    this.changeTargets(quests, questsText);
+    this.logger.log("Scavs4All finished searching quest database!", LogTextColor.GREEN);
+    this.logger.info("--------------------------------------------");
+    this.logger.log("Found a total of " + this.totalNumberOfQuests + " quests", LogTextColor.GREEN);
+    this.logger.log("Replaced a total of " + this.totalNumberOfQuestsReplaced + " quest conditions", LogTextColor.GREEN);
+    this.logger.log("Replaced " + this.numberOfScavQuestsReplaced + " scav kill conditions", LogTextColor.GREEN);
+    this.logger.log("Replaced " + this.numberOfPmcQuestsReplaced + " PMC kill conditions", LogTextColor.GREEN);
+    this.logger.info("--------------------------------------------");
   }
 
   private changeTargets(quests: any, questsText: any):void
@@ -55,9 +66,14 @@ class Scavs4All implements IPostDBLoadMod
     {
       this.logger.info("Iterating through quests");
     }
+    else{
+      this.logger.info("Scavs4All Searching Quest Database...");
+    }
     //iterate through every quest in quests.json
     for(let eachQuest in quests)
         {
+            //add one to our total quest counter
+            this.totalNumberOfQuests = this.totalNumberOfQuests + 1;
             const currentQuest = quests[eachQuest]
             //iterate through all the conditions of the current quest
             for(let eachCondition in currentQuest.conditions.AvailableForFinish)
@@ -76,16 +92,19 @@ class Scavs4All implements IPostDBLoadMod
                         //make sure the quest isn't a quest to kill bosses
                         if(specificCondition.savageRole == undefined || specificCondition.savageRole.length == 0)
                         {
+                          //debug logging
                           if(this.debug == true)
-                            {
-                              this.logger.info("Found a scav kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any" );
-                            }
+                          {
+                            this.logger.info("Found a scav kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any" );
+                          }
+
                           //if it does replace the condition with any target
                           quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'Any';
                           
                           //find the id for changing the task text
                           const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id;
-                            
+                          
+                          //verbose logging
                           if(this.verboseDebug == true)
                           {
                             this.logger.info("Quest ID is: " + questTextID);
@@ -104,22 +123,31 @@ class Scavs4All implements IPostDBLoadMod
                               this.logger.info("New quest text is" + questsText[questTextID]);
                             }
                           }
+
+                          //increment our changed quests counters
+                          this.totalNumberOfQuestsReplaced = this.totalNumberOfQuestsReplaced + 1;
+                          this.numberOfScavQuestsReplaced = this.numberOfScavQuestsReplaced + 1;
                         }
                       }
                       //if we have replacepmc turned on we need to replace pmc conditions as well
                       if(this.replacePmc == true)
                         {
+                          //check if the kill condition is a pmc kill condition
                           if(specificCondition.conditionType === 'Kills' && specificCondition.target === 'AnyPmc')
                           {
+                            //debug logging
                             if(this.debug == true)
                               {
                                 this.logger.info("Found a pmc kill quest condition in quest name: " + currentQuest.QuestName + " replacing kill condition with any(IF YOU DO NOT WANT THIS DISABLE IT IN CONFIG)" )
                               }
+
+                            //replace the kill condition with any
                             quests[eachQuest].conditions.AvailableForFinish[eachCondition].counter.conditions[eachSubCondition].target = 'Any';
 
                             //check if we have harder pmcwithall turned on, if we do we need to double the amount needed
                             if(this.harderPmc == true)
                             {
+                              //debug logging
                               if(this.debug == true)
                                 {
                                   this.logger.info("harder pmc replacement conditions are ON doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + currentCondition.value * 2);
@@ -135,6 +163,10 @@ class Scavs4All implements IPostDBLoadMod
                             {
                               questsText[questTextID] = questsText[questTextID] + " (S4A)";
                             }
+
+                            //increment our changed quests counters
+                            this.totalNumberOfQuestsReplaced = this.totalNumberOfQuestsReplaced + 1;
+                            this.numberOfPmcQuestsReplaced = this.numberOfPmcQuestsReplaced + 1;
                           }
                         }
                     }
