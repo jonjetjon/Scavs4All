@@ -175,10 +175,17 @@ class Scavs4All implements IPostDBLoadMod
                               if(this.debug == true)
                                 {
 
-                                  this.logger.info("harder pmc replacement conditions are ON set to" + this.harderPmcMultiplier + ". doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + Math.round(this.newValue));
+                                  this.logger.info("harder pmc replacement conditions are ON and set to " + this.harderPmcMultiplier + ". doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + Math.round(this.newValue));
                                 }
 
                                 quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = Math.round(this.newValue);
+                            }
+                            else
+                            {
+                              if(this.debug == true)
+                              {
+                                this.logger.info("Harder PMC replacement conditions are OFF, not modifying quest conditions");
+                              }
                             }
 
                             //find the id for changing the task text
