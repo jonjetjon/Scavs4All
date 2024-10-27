@@ -80,7 +80,21 @@ class Scavs4All implements IPostDBLoadMod
     }
     this.logger.info("--------------------------------------------");
   }
-
+  private changeQuestText(questsText: any, questTextID: any):void
+  {
+    if(questsText[questTextID] != null)
+      {
+        if(this.verboseDebug == true)
+        {
+          this.logger.info("Quest text found! Original quest text is: " + questsText[questTextID]);
+        }
+        questsText[questTextID] = questsText[questTextID] + " (S4A)";
+        if(this.verboseDebug == true)
+        {
+          this.logger.info("New quest text is" + questsText[questTextID]);
+        }
+      }
+  }
   private changeTargets(quests: any, questsText: any):void
   {
     if(this.verboseDebug == true)
@@ -132,18 +146,8 @@ class Scavs4All implements IPostDBLoadMod
                           }
 
                           //and append (S4A) to the tast text
-                          if(questsText[questTextID] != null)
-                          {
-                            if(this.verboseDebug == true)
-                            {
-                              this.logger.info("Quest text found! Original quest text is: " + questsText[questTextID]);
-                            }
-                            questsText[questTextID] = questsText[questTextID] + " (S4A)";
-                            if(this.verboseDebug == true)
-                            {
-                              this.logger.info("New quest text is" + questsText[questTextID]);
-                            }
-                          }
+                          this.changeQuestText(questsText, questTextID);
+                          
 
                           //increment our changed quests counters
                           this.totalNumberOfQuestsReplaced = this.totalNumberOfQuestsReplaced + 1;
@@ -191,11 +195,7 @@ class Scavs4All implements IPostDBLoadMod
                             //find the id for changing the task text
                             const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id;
 
-                            //and append (S4A) to the tast text
-                            if(questsText[questTextID] != null)
-                            {
-                              questsText[questTextID] = questsText[questTextID] + " (S4A)";
-                            }
+                            this.changeQuestText(questsText, questTextID);
 
                             //increment our changed quests counters
                             this.totalNumberOfQuestsReplaced = this.totalNumberOfQuestsReplaced + 1;
