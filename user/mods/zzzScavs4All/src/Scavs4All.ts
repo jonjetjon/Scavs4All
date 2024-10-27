@@ -26,13 +26,14 @@ class Scavs4All implements IPostDBLoadMod
   private totalNumberOfQuestsReplaced =0;
   private didHarderPmc = false;
   private newValue = 0;
-
+  private globalLocales;
   public postDBLoad(container :DependencyContainer):void
   {
     this.container = container;
     this.logger = this.container.resolve<ILogger>("WinstonLogger");
     const quests = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().templates.quests;
     const questsText = this.container.resolve<LocaleService>("LocaleService").getLocaleDb();
+    this.globalLocales = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().locales.global;
     
     //load in our config file as an instance of Config
     Scavs4All.config = JSON.parse(fs.readFileSync(Scavs4All.configPath, "utf-8"));
@@ -45,7 +46,7 @@ class Scavs4All implements IPostDBLoadMod
     this.harderPmcMultiplier =Scavs4All.config.HarderPMCMultiplier;
 
     //run the main code to replace the quest conditions and text
-    this.changeTargets(quests, questsText);
+    this.changeTargets(quests);
 
     //print out a summary once done
     this.printSummary();
@@ -80,8 +81,29 @@ class Scavs4All implements IPostDBLoadMod
     }
     this.logger.info("--------------------------------------------");
   }
-
-  private changeTargets(quests: any, questsText: any):void
+  private changeQuestText(questTextID: any):void
+  {
+      //iterate through all the languages
+      for(let eachLocale in this.globalLocales)
+      {
+        const currentLocale = this.globalLocales[eachLocale];
+        //make sure we found something
+        if(currentLocale[questTextID] != null)
+          {
+            if(this.verboseDebug == true)
+            {
+              this.logger.info("Quest text found! Original quest text is: " + currentLocale[questTextID]);
+            }
+            //append s4a to the end
+            currentLocale[questTextID] = currentLocale[questTextID] + " (S4A)";
+            if(this.verboseDebug == true)
+            {
+              this.logger.info("New quest text is " + currentLocale[questTextID]);
+            }
+          }
+      }
+  }
+  private changeTargets(quests: any):void
   {
     if(this.verboseDebug == true)
     {
@@ -132,18 +154,8 @@ class Scavs4All implements IPostDBLoadMod
                           }
 
                           //and append (S4A) to the tast text
-                          if(questsText[questTextID] != null)
-                          {
-                            if(this.verboseDebug == true)
-                            {
-                              this.logger.info("Quest text found! Original quest text is: " + questsText[questTextID]);
-                            }
-                            questsText[questTextID] = questsText[questTextID] + " (S4A)";
-                            if(this.verboseDebug == true)
-                            {
-                              this.logger.info("New quest text is" + questsText[questTextID]);
-                            }
-                          }
+                          this.changeQuestText(questTextID);
+                          
 
                           //increment our changed quests counters
                           this.totalNumberOfQuestsReplaced = this.totalNumberOfQuestsReplaced + 1;
@@ -191,11 +203,7 @@ class Scavs4All implements IPostDBLoadMod
                             //find the id for changing the task text
                             const questTextID = quests[eachQuest].conditions.AvailableForFinish[eachCondition].id;
 
-                            //and append (S4A) to the tast text
-                            if(questsText[questTextID] != null)
-                            {
-                              questsText[questTextID] = questsText[questTextID] + " (S4A)";
-                            }
+                            this.changeQuestText(questTextID);
 
                             //increment our changed quests counters
                             this.totalNumberOfQuestsReplaced = this.totalNumberOfQuestsReplaced + 1;
