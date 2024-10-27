@@ -26,7 +26,7 @@ class Scavs4All implements IPostDBLoadMod
   private totalNumberOfQuestsReplaced =0;
   private didHarderPmc = false;
   private newValue = 0;
-  
+
   public postDBLoad(container :DependencyContainer):void
   {
     this.container = container;
@@ -168,12 +168,16 @@ class Scavs4All implements IPostDBLoadMod
                             //check if we have harder pmcwithall turned on, if we do we need to double the amount needed
                             if(this.harderPmc == true)
                             {
-                              //debug logging
+
+                                this.newValue = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * this.harderPmcMultiplier;
+                                
+                                //debug logging
                               if(this.debug == true)
                                 {
-                                  this.logger.info("harder pmc replacement conditions are ON doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + currentCondition.value * 2);
+
+                                  this.logger.info("harder pmc replacement conditions are ON set to" + this.harderPmcMultiplier + ". doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + Math.round(this.newValue));
                                 }
-                                this.newValue = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * this.harderPmcMultiplier;
+
                                 quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = Math.round(this.newValue);
                             }
 
