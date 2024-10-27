@@ -10,22 +10,31 @@ import * as path from "node:path";
 class Scavs4All implements IPostDBLoadMod
 {
   private container: DependencyContainer;
+
+  //config variables
   private static configPath = path.resolve(__dirname, "../config/config.json");
   private static config: Config;
-  private logger :ILogger;
-  private loggerBuffer :string[] = [];
   private replacePmc = false;
   private harderPmc = false;
   private harderPmcMultiplier = 1;
   private debug = false;
   private verboseDebug = false;
+
+  //logger
+  private logger :ILogger;
+  private loggerBuffer :string[] = [];
+
+  //counter variables
   private numberOfScavQuestsReplaced = 0;
   private numberOfPmcQuestsReplaced = 0;
   private totalNumberOfQuests = 0;
   private totalNumberOfQuestsReplaced =0;
   private didHarderPmc = false;
   private newValue = 0;
+
+  //databases
   private globalLocales;
+
   public postDBLoad(container :DependencyContainer):void
   {
     this.container = container;
@@ -80,6 +89,7 @@ class Scavs4All implements IPostDBLoadMod
     }
     this.logger.info("--------------------------------------------");
   }
+
   private changeQuestText(questTextID: any):void
   {
       //iterate through all the languages
@@ -102,6 +112,7 @@ class Scavs4All implements IPostDBLoadMod
           }
       }
   }
+  
   private changeTargets(quests: any):void
   {
     if(this.verboseDebug == true)
