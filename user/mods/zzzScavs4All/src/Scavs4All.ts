@@ -4,59 +4,80 @@ import type { IPostDBLoadMod } from "@spt-aki/models/external/IPostDBLoadMod"
 import type { DatabaseServer } from "@spt-aki/servers/DatabaseServer"
 import type {LocaleService} from "@spt-aki/services/LocaleService"
 import { LogTextColor } from "@spt/models/spt/logging/LogTextColor";
+import { JsonUtil } from "@spt/utils/JsonUtil";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 class Scavs4All implements IPostDBLoadMod
 {
   private container: DependencyContainer;
-  private config = require("../config/config.json");
+  private static configPath = path.resolve(__dirname, "../config/config.json");
+  private static config: Config;
   private logger :ILogger;
   private loggerBuffer :string[] = [];
   private replacePmc = false;
   private harderPmc = false;
+  private harderPmcMultiplier = 1;
   private debug = false;
   private verboseDebug = false;
   private numberOfScavQuestsReplaced = 0;
   private numberOfPmcQuestsReplaced = 0;
   private totalNumberOfQuests = 0;
   private totalNumberOfQuestsReplaced =0;
+  private didHarderPmc = false;
+  private newValue = 0;
+
   public postDBLoad(container :DependencyContainer):void
   {
     this.container = container;
     this.logger = this.container.resolve<ILogger>("WinstonLogger");
     const quests = this.container.resolve<DatabaseServer>("DatabaseServer").getTables().templates.quests;
     const questsText = this.container.resolve<LocaleService>("LocaleService").getLocaleDb();
-    //go through each option in the config.json and handle known ones
-    for (let eachOption in this.config)
-    {
-      if (this.config[eachOption] != false)
-      {
-        switch (eachOption)
-        {
-          case 'debug':
-          this.debug = true;
-          break;
+    
+    //load in our config file as an instance of Config
+    Scavs4All.config = JSON.parse(fs.readFileSync(Scavs4All.configPath, "utf-8"));
 
-          case 'ReplacePMCWithAll':
-          this.replacePmc = true;
-          break;
-          
-          case 'HarderPMCWithAll':
-          this.harderPmc = true;
-          break;
-          
-          case 'verboseDebug':
-          this.verboseDebug = true;
-          break;
-        }
+    //go through our config and set the associated variables using the config file
+    this.replacePmc = Scavs4All.config.ReplacePMCWithAll;
+    this.harderPmc = Scavs4All.config.HarderPMCWithAll;
+    this.debug = Scavs4All.config.debug;
+    this.verboseDebug = Scavs4All.config.verboseDebug;
+    this.harderPmcMultiplier =Scavs4All.config.HarderPMCMultiplier;
+
+    //run the main code to replace the quest conditions and text
+    this.changeTargets(quests, questsText);
+
+    //print out a summary once done
+    this.printSummary();
+  }
+
+  private printSummary():void
+  {
+
+    //check if we replaced pmc kill conditions
+    this.didHarderPmc = false;
+    if(this.replacePmc == true)
+    {
+      if(this.harderPmc == true)
+      {
+        this.didHarderPmc = true;
       }
     }
-    this.changeTargets(quests, questsText);
+
     this.logger.log("Scavs4All finished searching quest database!", LogTextColor.GREEN);
     this.logger.info("--------------------------------------------");
     this.logger.log("Found a total of " + this.totalNumberOfQuests + " quests", LogTextColor.GREEN);
     this.logger.log("Replaced a total of " + this.totalNumberOfQuestsReplaced + " quest conditions", LogTextColor.GREEN);
     this.logger.log("Replaced " + this.numberOfScavQuestsReplaced + " scav kill conditions", LogTextColor.GREEN);
     this.logger.log("Replaced " + this.numberOfPmcQuestsReplaced + " PMC kill conditions", LogTextColor.GREEN);
+    if(this.didHarderPmc == false)
+    {
+      this.logger.log("Did not change number of kills required for PMC kill conditions", LogTextColor.GREEN);
+    }
+    else
+    {
+      this.logger.log("Multiplied number of kills required for PMC kill conditions by " + (this.harderPmcMultiplier*100) + "%", LogTextColor.RED);
+    }
     this.logger.info("--------------------------------------------");
   }
 
@@ -147,12 +168,24 @@ class Scavs4All implements IPostDBLoadMod
                             //check if we have harder pmcwithall turned on, if we do we need to double the amount needed
                             if(this.harderPmc == true)
                             {
-                              //debug logging
+
+                                this.newValue = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * this.harderPmcMultiplier;
+                                
+                                //debug logging
                               if(this.debug == true)
                                 {
-                                  this.logger.info("harder pmc replacement conditions are ON doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + currentCondition.value * 2);
+
+                                  this.logger.info("harder pmc replacement conditions are ON and set to " + this.harderPmcMultiplier + ". doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + Math.round(this.newValue));
                                 }
-                                quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * 2;
+
+                                quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = Math.round(this.newValue);
+                            }
+                            else
+                            {
+                              if(this.debug == true)
+                              {
+                                this.logger.info("Harder PMC replacement conditions are OFF, not modifying quest conditions");
+                              }
                             }
 
                             //find the id for changing the task text
@@ -174,6 +207,15 @@ class Scavs4All implements IPostDBLoadMod
             }
         }
   }
+}
+
+interface Config 
+{
+  ReplacePMCWithAll: boolean,
+  HarderPMCWithAll: boolean,
+  HarderPMCMultiplier: number,
+  debug: boolean,
+  verboseDebug: boolean,
 }
 
 module.exports = {mod: new Scavs4All()}
