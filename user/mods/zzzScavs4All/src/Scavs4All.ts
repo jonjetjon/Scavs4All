@@ -4,7 +4,6 @@ import type { IPostDBLoadMod } from "@spt-aki/models/external/IPostDBLoadMod"
 import type { DatabaseServer } from "@spt-aki/servers/DatabaseServer"
 import type {LocaleService} from "@spt-aki/services/LocaleService"
 import { LogTextColor } from "@spt/models/spt/logging/LogTextColor";
-import { JsonUtil } from "@spt/utils/JsonUtil";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
