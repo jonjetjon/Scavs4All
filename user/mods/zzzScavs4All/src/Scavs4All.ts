@@ -17,13 +17,15 @@ class Scavs4All implements IPostDBLoadMod
   private loggerBuffer :string[] = [];
   private replacePmc = false;
   private harderPmc = false;
+  private harderPmcMultiplier = 1;
   private debug = false;
   private verboseDebug = false;
   private numberOfScavQuestsReplaced = 0;
   private numberOfPmcQuestsReplaced = 0;
   private totalNumberOfQuests = 0;
   private totalNumberOfQuestsReplaced =0;
-  
+  private didHarderPmc = false;
+
   public postDBLoad(container :DependencyContainer):void
   {
     this.container = container;
@@ -39,20 +41,44 @@ class Scavs4All implements IPostDBLoadMod
     this.harderPmc = Scavs4All.config.HarderPMCWithAll;
     this.debug = Scavs4All.config.debug;
     this.verboseDebug = Scavs4All.config.verboseDebug;
+    this.harderPmcMultiplier =Scavs4All.config.HarderPMCMultiplier;
 
     //run the main code to replace the quest conditions and text
     this.changeTargets(quests, questsText);
 
     //print out a summary once done
+    this.printSummary();
+  }
+
+  private printSummary():void
+  {
+
+    //check if we replaced pmc kill conditions
+    this.didHarderPmc = false;
+    if(this.replacePmc == true)
+    {
+      if(this.harderPmc == true)
+      {
+        this.didHarderPmc = true;
+      }
+    }
+
     this.logger.log("Scavs4All finished searching quest database!", LogTextColor.GREEN);
     this.logger.info("--------------------------------------------");
     this.logger.log("Found a total of " + this.totalNumberOfQuests + " quests", LogTextColor.GREEN);
     this.logger.log("Replaced a total of " + this.totalNumberOfQuestsReplaced + " quest conditions", LogTextColor.GREEN);
     this.logger.log("Replaced " + this.numberOfScavQuestsReplaced + " scav kill conditions", LogTextColor.GREEN);
     this.logger.log("Replaced " + this.numberOfPmcQuestsReplaced + " PMC kill conditions", LogTextColor.GREEN);
+    if(this.didHarderPmc == false)
+    {
+      this.logger.log("Did not change number of kills required for PMC kill conditions", LogTextColor.GREEN);
+    }
+    else
+    {
+      this.logger.log("Multiplied number of kills required for PMC kill conditions by " + (this.harderPmcMultiplier*100) + "%", LogTextColor.RED);
+    }
     this.logger.info("--------------------------------------------");
   }
-
   private changeTargets(quests: any, questsText: any):void
   {
     if(this.verboseDebug == true)
