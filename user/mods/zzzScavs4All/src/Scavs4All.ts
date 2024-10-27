@@ -25,7 +25,8 @@ class Scavs4All implements IPostDBLoadMod
   private totalNumberOfQuests = 0;
   private totalNumberOfQuestsReplaced =0;
   private didHarderPmc = false;
-
+  private newValue = 0;
+  
   public postDBLoad(container :DependencyContainer):void
   {
     this.container = container;
@@ -79,6 +80,7 @@ class Scavs4All implements IPostDBLoadMod
     }
     this.logger.info("--------------------------------------------");
   }
+
   private changeTargets(quests: any, questsText: any):void
   {
     if(this.verboseDebug == true)
@@ -171,7 +173,8 @@ class Scavs4All implements IPostDBLoadMod
                                 {
                                   this.logger.info("harder pmc replacement conditions are ON doubling kill count for: " + currentQuest.QuestName + " from " + currentCondition.value + " to " + currentCondition.value * 2);
                                 }
-                                quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * 2;
+                                this.newValue = quests[eachQuest].conditions.AvailableForFinish[eachCondition].value * this.harderPmcMultiplier;
+                                quests[eachQuest].conditions.AvailableForFinish[eachCondition].value = Math.round(this.newValue);
                             }
 
                             //find the id for changing the task text
