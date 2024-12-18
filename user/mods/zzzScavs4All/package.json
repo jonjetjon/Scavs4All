@@ -1,10 +1,10 @@
 {
     "name": "Scavs4All",
-    "version": "1.0.9",
+    "version": "1.1.0",
     "main": "src/Scavs4All.js",
     "license": "NCSA",
     "author": "LeftHandCat",
-    "sptVersion": "3.9.*",
+    "sptVersion": "3.10.*",
     "scripts": {
         "setup": "npm i",
         "build": "node ./packageBuild.ts"
